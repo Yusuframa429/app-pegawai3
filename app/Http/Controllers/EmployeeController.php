@@ -2,101 +2,117 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Employee;
+// Import Model, Request, dan helper yang kita butuhkan
+use App\Models\Employee; // Ganti dari User ke Employee
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class EmployeeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Tampilkan daftar semua pegawai.
      */
-    public function index()
+    public function index(): View
     {
-        $employees = \App\Models\Employee::all(); // Pastikan Anda mengambil data
+        // Ambil semua data pegawai dari database
+        $employees = Employee::latest()->paginate(10); // Ambil data terbaru, 10 per halaman
 
-        //dd($employees); // <-- TAMBAHKAN INI UNTUK DEBUG
-
+        // Kirim data employees ke view 'employees.index'
         return view('employees.index', compact('employees'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Tampilkan formulir untuk membuat pegawai baru.
      */
-    public function create()
+    public function create(): View
     {
+        // Langsung tampilkan view 'employees.create'
         return view('employees.create');
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Simpan pegawai baru ke database.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
+        // 1. Validasi data yang masuk
         $request->validate([
-            'nama_lengkap' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'nomor_telepon' => 'required|string|max:20',
+            'nama_lengkap' => 'required|string|max:100',
+            'email' => 'required|email|max:100|unique:employees', // pastikan email unik di tabel employees
+            'nomor_telepon' => 'required|string|max:15',
             'tanggal_lahir' => 'required|date',
-            'alamat' => 'required|string|max:255',
+            'alamat' => 'required|string',
             'tanggal_masuk' => 'required|date',
-            'status' => 'required|string|max:50',
+            'status' => 'required|in:aktif,nonaktif', // pastikan nilainya hanya 'aktif' atau 'nonaktif'
         ]);
+
+        // 2. Buat pegawai baru di database
+        // Ini bisa berjalan karena kita sudah mengatur $fillable di Model
         Employee::create($request->all());
-        return redirect()->route('employees.index');
+
+        // 3. Arahkan kembali ke halaman index dengan pesan sukses
+        return redirect()->route('employees.index')->with('success', 'Pegawai baru berhasil ditambahkan.');
     }
 
     /**
-     * Display the specified resource.
+     * Tampilkan data satu pegawai (kita lewati ini, tidak umum dipakai).
      */
     public function show(string $id)
     {
-        $employee = Employee::find($id);
-        return view('employees.show', compact('employee'));
+        return redirect()->route('employees.edit', $id);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Tampilkan formulir untuk meng-edit pegawai.
      */
-    public function edit(string $id)
+    public function edit(string $id): View
     {
-        $employee = Employee::find($id);
+        // 1. Cari pegawai berdasarkan ID
+        $employee = Employee::findOrFail($id);
+
+        // 2. Kirim data pegawai tadi ke view 'employees.edit'
         return view('employees.edit', compact('employee'));
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update data pegawai di database.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): RedirectResponse
     {
-        $request->validate([
-            'nama_lengkap' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'nomor_telepon' => 'required|string|max:20',
-            'tanggal_lahir' => 'required|date',
-            'alamat' => 'required|string|max:255',
-            'tanggal_masuk' => 'required|date',
-            'status' => 'required|string|max:50',
-        ]);
+        // 1. Cari pegawai yang mau di-update
         $employee = Employee::findOrFail($id);
-        $employee->update($request->only([
-            'nama_lengkap',
-            'email',
-            'nomor_telepon',
-            'tanggal_lahir',
-            'alamat',
-            'tanggal_masuk',
-            'status',
-        ]));
-        return redirect()->route('employees.index');
+
+        // 2. Validasi data
+        $request->validate([
+            'nama_lengkap' => 'required|string|max:100',
+            'email' => 'required|email|max:100|unique:employees,email,' . $employee->id, // Email boleh sama dengan email dia sendiri
+            'nomor_telepon' => 'required|string|max:15',
+            'tanggal_lahir' => 'required|date',
+            'alamat' => 'required|string',
+            'tanggal_masuk' => 'required|date',
+            'status' => 'required|in:aktif,nonaktif',
+        ]);
+
+        // 3. Update data di database
+        $employee->update($request->all());
+
+        // 4. Arahkan kembali ke halaman index dengan pesan sukses
+        return redirect()->route('employees.index')->with('success', 'Data pegawai berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Hapus pegawai dari database.
      */
-    public function destroy(string $id)
+    public function destroy(string $id): RedirectResponse
     {
-        $employee = Employee::find($id);
+        // 1. Cari pegawai
+        $employee = Employee::findOrFail($id);
+
+        // 2. Hapus pegawai
         $employee->delete();
-        return redirect()->route('employees.index');
+
+        // 3. Arahkan kembali ke halaman index dengan pesan sukses
+        return redirect()->route('employees.index')->with('success', 'Pegawai berhasil dihapus.');
     }
 }

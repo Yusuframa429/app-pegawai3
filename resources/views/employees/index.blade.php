@@ -1,47 +1,73 @@
-{{-- File: resources/views/employees/index.blade.php --}}
-
-@extends('master')
+@extends('layouts.app')
 
 @section('title', 'Daftar Pegawai')
 
 @section('content')
-<div class="container mt-5">
-    <h1 class="mb-4">Daftar Pegawai</h1>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <thead>
-            <tr>
-                <th>Nama Lengkap</th>
-                <th>Email</th>
-                <th>Nomor Telepon</th>
-                <th>Tanggal Lahir</th>
-                <th>Alamat</th>
-                <th>Tanggal Masuk</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($employees as $employee)
-                <tr>
-                    <td>{{ $employee->nama_lengkap }}</td>
-                    <td>{{ $employee->email }}</td>
-                    <td>{{ $employee->nomor_telepon }}</td>
-                    <td>{{ $employee->tanggal_lahir }}</td>
-                    <td>{{ $employee->alamat }}</td>
-                    <td>{{ $employee->tanggal_masuk }}</td>
-                    <td>{{ $employee->status }}</td>
-                    <td>
-                        <a href="{{ route('employees.show', $employee->id) }}">Detail</a> |
-                        <a href="{{ route('employees.edit', $employee->id) }}">Edit</a> |
-                        <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" onclick="return confirm('Yakin ingin menghapus?')">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
+    <div class="bg-white shadow-md rounded-lg p-6">
+
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-bold">Manajemen Pegawai</h1>
+            <a href="{{ route('employees.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                <i class="fa-solid fa-plus"></i> Tambah Pegawai
+            </a>
+        </div>
+
+        @if (session('success'))
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ session('success') }}</span>
+            </div>
+        @endif
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-200">
+                    <tr>
+                        <th class="py-2 px-4 border-b">No</th>
+                        <th class="py-2 px-4 border-b">Nama Lengkap</th>
+                        <th class="py-2 px-4 border-b">Email</th>
+                        <th class="py-2 px-4 border-b">No. Telepon</th>
+                        <th class="py-2 px-4 border-b">Status</th>
+                        <th class="py-2 px-4 border-b">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($employees as $key => $employee)
+                        <tr class="hover:bg-gray-50">
+                            <td class="py-2 px-4 border-b text-center">{{ $loop->iteration }}</td>
+                            <td class="py-2 px-4 border-b">{{ $employee->nama_lengkap }}</td>
+                            <td class="py-2 px-4 border-b">{{ $employee->email }}</td>
+                            <td class="py-2 px-4 border-b">{{ $employee->nomor_telepon }}</td>
+                            <td class="py-2 px-4 border-b">
+                                @if ($employee->status == 'aktif')
+                                    <span class="bg-green-200 text-green-800 py-1 px-3 rounded-full text-xs">Aktif</span>
+                                @else
+                                    <span class="bg-red-200 text-red-800 py-1 px-3 rounded-full text-xs">Nonaktif</span>
+                                @endif
+                            </td>
+                            <td class="py-2 px-4 border-b text-center">
+                                <a href="{{ route('employees.edit', $employee->id) }}" class="text-yellow-500 hover:text-yellow-700 mr-2">
+                                    <i class="fa-solid fa-pencil"></i> Edit
+                                </a>
+
+                                <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah kamu yakin ingin menghapus pegawai ini?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-500 hover:text-red-700">
+                                        <i class="fa-solid fa-trash"></i> Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="py-4 px-4 border-b text-center">
+                                Tidak ada data pegawai.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+    </div>
 @endsection
