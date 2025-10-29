@@ -25,8 +25,7 @@
                         <th class="py-2 px-4 border-b">No</th>
                         <th class="py-2 px-4 border-b">Nama Lengkap</th>
                         <th class="py-2 px-4 border-b">Email</th>
-                        <th class="py-2 px-4 border-b">No. Telepon</th>
-                        <th class="py-2 px-4 border-b">Status</th>
+                        <th class="py-2 px-4 border-b">Departemen</th> <th class="py-2 px-4 border-b">Jabatan</th>    <th class="py-2 px-4 border-b">Status</th>
                         <th class="py-2 px-4 border-b">Aksi</th>
                     </tr>
                 </thead>
@@ -36,7 +35,10 @@
                             <td class="py-2 px-4 border-b text-center">{{ $loop->iteration }}</td>
                             <td class="py-2 px-4 border-b">{{ $employee->nama_lengkap }}</td>
                             <td class="py-2 px-4 border-b">{{ $employee->email }}</td>
-                            <td class="py-2 px-4 border-b">{{ $employee->nomor_telepon }}</td>
+
+                            <td class="py-2 px-4 border-b">{{ $employee->department->nama_departemen ?? 'N/A' }}</td>
+                            <td class="py-2 px-4 border-b">{{ $employee->position->nama_jabatan ?? 'N/A' }}</td>
+
                             <td class="py-2 px-4 border-b">
                                 @if ($employee->status == 'aktif')
                                     <span class="bg-green-200 text-green-800 py-1 px-3 rounded-full text-xs">Aktif</span>
@@ -48,7 +50,6 @@
                                 <a href="{{ route('employees.edit', $employee->id) }}" class="text-yellow-500 hover:text-yellow-700 mr-2">
                                     <i class="fa-solid fa-pencil"></i> Edit
                                 </a>
-
                                 <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah kamu yakin ingin menghapus pegawai ini?');">
                                     @csrf
                                     @method('DELETE')
@@ -60,7 +61,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-4 px-4 border-b text-center">
+                            <td colspan="7" class="py-4 px-4 border-b text-center">
                                 Tidak ada data pegawai.
                             </td>
                         </tr>
