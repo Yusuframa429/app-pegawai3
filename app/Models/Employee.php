@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo; // Import BelongsTo
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
@@ -12,9 +13,6 @@ class Employee extends Model
 
     /**
      * $fillable berisi daftar kolom yang 'diizinkan'
-     * untuk diisi secara massal (mass assignment)
-     *
-     * TAMBAHKAN department_id dan jabatan_id
      */
     protected $fillable = [
         'nama_lengkap',
@@ -24,12 +22,12 @@ class Employee extends Model
         'alamat',
         'tanggal_masuk',
         'status',
-        'department_id', // <-- Tambahkan ini
-        'jabatan_id',    // <-- Tambahkan ini
+        'department_id',
+        'jabatan_id',
     ];
 
     /**
-     * Relasi ke tabel Department (Satu Pegawai Punya Satu Departemen).
+     * Relasi ke tabel Department
      */
     public function department(): BelongsTo
     {
@@ -37,14 +35,26 @@ class Employee extends Model
     }
 
     /**
-     * Relasi ke tabel Position (Satu Pegawai Punya Satu Jabatan).
-     *
-     * KITA HARUS MENAMBAHKAN 'jabatan_id' SEBAGAI ARGUMEN KEDUA
-     * untuk memberitahu Laravel bahwa nama kolom foreign key-nya
-     * adalah 'jabatan_id', BUKAN 'position_id' (default).
+     * Relasi ke tabel Position
      */
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class, 'jabatan_id');
+    }
+
+    /**
+     * Relasi sebaliknya ke Gaji
+     */
+    public function salaries(): HasMany
+    {
+        return $this->hasMany(Salary::class, 'employee_id');
+    }
+
+    /**
+     * Relasi sebaliknya ke tabel Attendence
+     */
+    public function attendences(): HasMany
+    {
+        return $this->hasMany(Attendence::class, 'karyawan_id');
     }
 }

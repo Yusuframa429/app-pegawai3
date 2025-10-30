@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 // Import Model yang kita butuhkan
 use App\Models\Employee;
-use App\Models\Department; // <-- Tambahkan ini
-use App\Models\Position;   // <-- Tambahkan ini
+use App\Models\Department;
+use App\Models\Position;
+
+// IMPORT YANG BENAR (Ini akan memperbaiki error di screenshot)
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -13,27 +15,42 @@ use Illuminate\Http\RedirectResponse;
 class EmployeeController extends Controller
 {
     /**
-     * Tampilkan daftar semua pegawai.
+     * Tampilkan daftar semua pegawai (SUDAH DENGAN FITUR SEARCH).
      */
-    public function index(): View
+    public function index(Request $request): View // <-- Ini sekarang ada di tempat yang TEPAT
     {
-        // Ambil data pegawai, TAPI JUGA ambil data relasinya
-        // 'with' (Eager Loading) mencegah N+1 query problem
-        $employees = Employee::with(['department', 'position'])->latest()->paginate(10);
+        // 1. Ambil kata kunci dari URL, jika ada
+        $keyword = $request->query('search');
 
+        // 2. Mulai query
+        $query = Employee::query();
+
+        // 3. Jika ada kata kunci, tambahkan kondisi 'where'
+        if ($keyword) {
+            $query->where(function($q) use ($keyword) {
+                $q->where('nama_lengkap', 'like', "%{$keyword}%")
+                  ->orWhere('email', 'like', "%{$keyword}%");
+            });
+        }
+
+        // 4. Lanjutkan query
+        $employees = $query->with(['department', 'position'])
+                            ->latest()
+                            ->paginate(10)
+                            ->withQueryString();
+
+        // 5. Kirim data ke view
         return view('employees.index', compact('employees'));
     }
+
 
     /**
      * Tampilkan formulir untuk membuat pegawai baru.
      */
     public function create(): View
     {
-        // Ambil semua departemen & jabatan
         $departments = Department::all();
         $positions = Position::all();
-
-        // Kirim ke view
         return view('employees.create', compact('departments', 'positions'));
     }
 
@@ -42,7 +59,6 @@ class EmployeeController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // 1. Validasi data
         $request->validate([
             'nama_lengkap' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:employees',
@@ -51,15 +67,12 @@ class EmployeeController extends Controller
             'alamat' => 'required|string',
             'tanggal_masuk' => 'required|date',
             'status' => 'required|in:aktif,nonaktif',
-            // Validasi jembatan (kita buat nullable karena di migrasi juga nullable)
             'department_id' => 'nullable|exists:departments,id',
             'jabatan_id' => 'nullable|exists:positions,id',
         ]);
 
-        // 2. Buat pegawai baru
         Employee::create($request->all());
 
-        // 3. Arahkan kembali
         return redirect()->route('employees.index')->with('success', 'Pegawai baru berhasil ditambahkan.');
     }
 
@@ -68,7 +81,13 @@ class EmployeeController extends Controller
      */
     public function show(string $id)
     {
-        return redirect()->route('employees.edit', $id);
+        // 1. Ambil data pegawai
+        // 2. Ambil juga SEMUA data relasinya (department, position, attendences, salaries)
+        $employee = Employee::with(['department', 'position', 'attendences', 'salaries'])
+                            ->findOrFail($id);
+
+        // 3. Kirim data ke view baru
+        return view('employees.show', compact('employee'));
     }
 
     /**
@@ -76,14 +95,9 @@ class EmployeeController extends Controller
      */
     public function edit(string $id): View
     {
-        // 1. Cari pegawai
         $employee = Employee::findOrFail($id);
-
-        // 2. Ambil semua departemen & jabatan (untuk dropdown)
         $departments = Department::all();
         $positions = Position::all();
-
-        // 3. Kirim ke view
         return view('employees.edit', compact('employee', 'departments', 'positions'));
     }
 
@@ -92,10 +106,8 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, string $id): RedirectResponse
     {
-        // 1. Cari pegawai
         $employee = Employee::findOrFail($id);
 
-        // 2. Validasi data
         $request->validate([
             'nama_lengkap' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:employees,email,' . $employee->id,
@@ -104,15 +116,12 @@ class EmployeeController extends Controller
             'alamat' => 'required|string',
             'tanggal_masuk' => 'required|date',
             'status' => 'required|in:aktif,nonaktif',
-            // Validasi jembatan
             'department_id' => 'nullable|exists:departments,id',
             'jabatan_id' => 'nullable|exists:positions,id',
         ]);
 
-        // 3. Update data
         $employee->update($request->all());
 
-        // 4. Arahkan kembali
         return redirect()->route('employees.index')->with('success', 'Data pegawai berhasil diperbarui.');
     }
 

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sidebar-layout')
 
 @section('title', 'Tambah Jabatan Baru')
 

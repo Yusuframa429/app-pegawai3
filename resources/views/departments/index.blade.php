@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sidebar-layout')
 
 @section('title', 'Daftar Departemen')
 
@@ -7,9 +7,23 @@
 
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold">Manajemen Departemen</h1>
-            <a href="{{ route('departments.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <a href="{{ route('departments.create') }}"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 <i class="fa-solid fa-plus"></i> Tambah Departemen
             </a>
+        </div>
+
+        <div class="mb-4">
+            <form action="{{ route('departments.index') }}" method="GET">
+                <div class="flex">
+                    <input type="text" name="search"
+                        class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700"
+                        placeholder="Cari nama departemen..." value="{{ request('search') }}">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                </div>
+            </form>
         </div>
 
         @if (session('success'))
@@ -33,16 +47,22 @@
                             <td class="py-2 px-4 border-b text-center">{{ $loop->iteration }}</td>
                             <td class="py-2 px-4 border-b">{{ $department->nama_departemen }}</td>
                             <td class="py-2 px-4 border-b text-center">
-                                <a href="{{ route('departments.edit', $department->id) }}" class="text-yellow-500 hover:text-yellow-700 mr-2">
+                                <a href="{{ route('departments.edit', $department->id) }}"
+                                    class="text-yellow-500 hover:text-yellow-700 mr-2">
                                     <i class="fa-solid fa-pencil"></i> Edit
                                 </a>
 
-                                <form action="{{ route('departments.destroy', $department->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah kamu yakin ingin menghapus departemen ini?');">
+                                {{-- Tombol Hapus baru, ini adalah link <a> yang memicu JS --}}
+                                <a href="#" class="text-red-500 hover:text-red-700"
+                                    onclick="event.preventDefault(); confirmDelete('form-hapus-department-{{ $department->id }}');">
+                                    <i class="fa-solid fa-trash"></i> Hapus
+                                </a>
+                                {{-- Form Hapus yang tersembunyi, di-submit oleh JS --}}
+                                <form id="form-hapus-department-{{ $department->id }}"
+                                    action="{{ route('departments.destroy', $department->id) }}" method="POST"
+                                    class="hidden">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:text-red-700">
-                                        <i class="fa-solid fa-trash"></i> Hapus
-                                    </button>
                                 </form>
                             </td>
                         </tr>
@@ -56,6 +76,8 @@
                 </tbody>
             </table>
         </div>
-
+        <div class="mt-4">
+            {{ $departments->links() }}
+        </div>
     </div>
 @endsection

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sidebar-layout')
 
 @section('title', 'Daftar Pegawai')
 
@@ -7,9 +7,22 @@
 
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold">Manajemen Pegawai</h1>
-            <a href="{{ route('employees.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <a href="{{ route('employees.create') }}"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 <i class="fa-solid fa-plus"></i> Tambah Pegawai
             </a>
+        </div>
+        <div class="mb-4">
+            <form action="{{ route('employees.index') }}" method="GET">
+                <div class="flex">
+                    <input type="text" n ame="search"
+                        class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700"
+                        placeholder="Cari nama atau email..." value="{{ request('search') }}">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                </div>
+            </form>
         </div>
 
         @if (session('success'))
@@ -25,7 +38,9 @@
                         <th class="py-2 px-4 border-b">No</th>
                         <th class="py-2 px-4 border-b">Nama Lengkap</th>
                         <th class="py-2 px-4 border-b">Email</th>
-                        <th class="py-2 px-4 border-b">Departemen</th> <th class="py-2 px-4 border-b">Jabatan</th>    <th class="py-2 px-4 border-b">Status</th>
+                        <th class="py-2 px-4 border-b">Departemen</th>
+                        <th class="py-2 px-4 border-b">Jabatan</th>
+                        <th class="py-2 px-4 border-b">Status</th>
                         <th class="py-2 px-4 border-b">Aksi</th>
                     </tr>
                 </thead>
@@ -47,15 +62,25 @@
                                 @endif
                             </td>
                             <td class="py-2 px-4 border-b text-center">
-                                <a href="{{ route('employees.edit', $employee->id) }}" class="text-yellow-500 hover:text-yellow-700 mr-2">
+                                <a href="{{ route('employees.show', $employee->id) }}"
+                                    class="text-blue-500 hover:text-blue-700 mr-2">
+                                    <i class="fa-solid fa-eye"></i> Detail
+                                </a>
+                                <a href="{{ route('employees.edit', $employee->id) }}"
+                                    class="text-yellow-500 hover:text-yellow-700 mr-2">
                                     <i class="fa-solid fa-pencil"></i> Edit
                                 </a>
-                                <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah kamu yakin ingin menghapus pegawai ini?');">
+                                {{-- Tombol Hapus baru, ini adalah link <a> yang memicu JS --}}
+                                <a href="#" class="text-red-500 hover:text-red-700"
+                                    onclick="event.preventDefault(); confirmDelete('form-hapus-department-{{ $employee->id }}');">
+                                    <i class="fa-solid fa-trash"></i> Hapus
+                                </a>
+                                {{-- Form Hapus yang tersembunyi, di-submit oleh JS --}}
+                                <form id="form-hapus-department-{{ $employee->id }}"
+                                    action="{{ route('departments.destroy', $employee->id) }}" method="POST"
+                                    class="hidden">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:text-red-700">
-                                        <i class="fa-solid fa-trash"></i> Hapus
-                                    </button>
                                 </form>
                             </td>
                         </tr>
@@ -69,6 +94,8 @@
                 </tbody>
             </table>
         </div>
-
+        <div class="mt-4">
+            {{ $employees->links() }}
+        </div>
     </div>
 @endsection

@@ -13,12 +13,26 @@ class DepartmentController extends Controller
     /**
      * Tampilkan daftar semua departemen.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        // Ambil semua data departemen dari database
-        $departments = Department::latest()->paginate(10); // Ambil data terbaru
+        // 1. Ambil kata kunci dari URL, jika ada
+        $keyword = $request->query('search');
 
-        // Kirim data departments ke view 'departments.index'
+        // 2. Mulai query
+        $query = Department::query();
+
+        // 3. Jika ada kata kunci, tambahkan kondisi 'where'
+        if ($keyword) {
+            $query->where('nama_departemen', 'like', "%{$keyword}%");
+        }
+
+        // 4. Lanjutkan query
+        //    'withQueryString()' PENTING agar pencarian tetap ada saat pindah halaman
+        $departments = $query->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        // 5. Kirim data ke view
         return view('departments.index', compact('departments'));
     }
 

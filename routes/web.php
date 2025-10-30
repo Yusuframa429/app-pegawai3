@@ -1,34 +1,27 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\PositionController;
+use App\Http\Controllers\AttendenceController;
+use App\Http\Controllers\SalaryController;
+use App\Http\Controllers\DashboardController;
 
-
+// Arahkan halaman utama ke daftar pegawai (contoh)
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('employees.index');
+});
+Route::get('/', function () {
+    return redirect()->route('dashboard'); // <-- MENJADI 'dashboard'
 });
 
-
-// 1. Import Controller-nya dulu di bagian atas file
-use App\Http\Controllers\UserController;
-
-// 2. Daftarkan semua 7 URL CRUD sekaligus
+// Ini adalah semua rute CRUD admin kamu
 Route::resource('users', UserController::class);
-
-// 1. Import Controller-nya dulu di bagian atas file
-use App\Http\Controllers\EmployeeController;
-
-// 2. Daftarkan semua 7 URL CRUD sekaligus
 Route::resource('employees', EmployeeController::class);
-
-
-// 1. Import Controller-nya dulu di bagian atas file
-use App\Http\Controllers\DepartmentController;
-
-// 2. Daftarkan semua 7 URL CRUD sekaligus
 Route::resource('departments', DepartmentController::class);
-
-// 1. Import Controller-nya dulu di bagian atas file
-use App\Http\Controllers\PositionController;
-
-// 2. Daftarkan semua 7 URL CRUD sekaligus
 Route::resource('positions', PositionController::class);
+Route::resource('attendences', AttendenceController::class);
+Route::resource('salaries', SalaryController::class);
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

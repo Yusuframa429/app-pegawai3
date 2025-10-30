@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.sidebar-layout')
 
 @section('title', 'Daftar Jabatan')
 
@@ -7,7 +7,8 @@
 
         <div class="flex justify-between items-center mb-4">
             <h1 class="text-2xl font-bold">Manajemen Jabatan</h1>
-            <a href="{{ route('positions.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            <a href="{{ route('positions.create') }}"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 <i class="fa-solid fa-plus"></i> Tambah Jabatan
             </a>
         </div>
@@ -33,18 +34,24 @@
                         <tr class="hover:bg-gray-50">
                             <td class="py-2 px-4 border-b text-center">{{ $loop->iteration }}</td>
                             <td class="py-2 px-4 border-b">{{ $position->nama_jabatan }}</td>
-                            <td class="py-2 px-4 border-b text-right">Rp {{ number_format($position->gaji_pokok, 2, ',', '.') }}</td>
+                            <td class="py-2 px-4 border-b text-right">Rp
+                                {{ number_format($position->gaji_pokok, 2, ',', '.') }}</td>
                             <td class="py-2 px-4 border-b text-center">
-                                <a href="{{ route('positions.edit', $position->id) }}" class="text-yellow-500 hover:text-yellow-700 mr-2">
+                                <a href="{{ route('positions.edit', $position->id) }}"
+                                    class="text-yellow-500 hover:text-yellow-700 mr-2">
                                     <i class="fa-solid fa-pencil"></i> Edit
                                 </a>
 
-                                <form action="{{ route('positions.destroy', $position->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah kamu yakin ingin menghapus jabatan ini?');">
+                                <a href="#" class="text-red-500 hover:text-red-700"
+                                    onclick="event.preventDefault(); confirmDelete('form-hapus-attendance-{{ $position->id }}');">
+                                    <i class="fa-solid fa-trash"></i> Hapus
+                                </a>
+                                {{-- Form Hapus yang tersembunyi, di-submit oleh JS --}}
+                                <form id="form-hapus-attendance-{{ $position->id }}"
+                                    action="{{ route('attendences.destroy', $position->id) }}" method="POST"
+                                    class="hidden">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-500 hover:text-red-700">
-                                        <i class="fa-solid fa-trash"></i> Hapus
-                                    </button>
                                 </form>
                             </td>
                         </tr>
@@ -58,6 +65,8 @@
                 </tbody>
             </table>
         </div>
-
+        <div class="mt-4">
+            {{ $positions->links() }}
+        </div>
     </div>
 @endsection

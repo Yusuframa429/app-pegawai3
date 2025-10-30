@@ -19,6 +19,14 @@ class Position extends Model
      * Relasi sebaliknya ke tabel Employee
      * Kita juga harus spesifikkan 'jabatan_id' di sini
      */
+
+    /**
+     * Relasi sebaliknya ke Gaji (Satu Jabatan punya BANYAK Gaji)
+     */
+    public function salaries(): HasMany
+    {
+        return $this->hasMany(Salary::class, 'jabatan_id');
+    }
     public function employees(): HasMany
     {
         return $this->hasMany(Employee::class, 'jabatan_id');
